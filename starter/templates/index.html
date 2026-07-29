@@ -6,13 +6,50 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h1>Sudoku Game</h1>
+  <div class="top-bar">
+    <h1>Sudoku Game</h1>
+    <button id="theme-toggle" class="theme-toggle">Dark Mode</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <label for="difficulty-selector">Difficulty</label>
+      <select id="difficulty-selector">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div class="status-item timer-item">
+      <span>Time</span>
+      <span id="timer">00:00</span>
+    </div>
+  </div>
+
   <div id="sudoku-board"></div>
+
   <div class="controls">
     <button id="new-game">New Game</button>
-    <button id="check-solution">Check Solution</button>
+    <button id="hint-button">Hint</button>
+    <button id="check-solution">Check</button>
     <span id="message"></span>
   </div>
+
+  <section class="scoreboard-panel">
+    <h2>Top 10 Fastest Times</h2>
+    <table id="scoreboard">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Time</th>
+          <th>Difficulty</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
   <script src="/static/main.js"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+import random
 import sudoku_logic
 
 app = Flask(__name__)
@@ -15,8 +16,12 @@ def index():
 
 @app.route('/new')
 def new_game():
-    clues = int(request.args.get('clues', 35))
-    puzzle, solution = sudoku_logic.generate_puzzle(clues)
+    difficulty = request.args.get('difficulty')
+    if difficulty is not None:
+        puzzle, solution = sudoku_logic.generate_puzzle(difficulty=difficulty)
+    else:
+        clues = int(request.args.get('clues', 35))
+        puzzle, solution = sudoku_logic.generate_puzzle(clues=clues)
     CURRENT['puzzle'] = puzzle
     CURRENT['solution'] = solution
     return jsonify({'puzzle': puzzle})
@@ -34,6 +39,31 @@ def check_solution():
             if board[i][j] != solution[i][j]:
                 incorrect.append([i, j])
     return jsonify({'incorrect': incorrect})
+
+@app.route('/hint', methods=['POST'])
+def hint():
+    data = request.json
+    board = data.get('board')
+    solution = CURRENT.get('solution')
+    if solution is None:
+        return jsonify({'error': 'No game in progress'}), 400
+    if board is None:
+        return jsonify({'error': 'Board is required for a hint'}), 400
+
+    candidates = []
+    for i in range(sudoku_logic.SIZE):
+        for j in range(sudoku_logic.SIZE):
+            if board[i][j] != solution[i][j]:
+                candidates.append((i, j))
+    if not candidates:
+        return jsonify({'error': 'No hint available'}), 400
+
+    row, col = random.choice(candidates)
+    return jsonify({
+        'row': row,
+        'col': col,
+        'value': solution[row][col]
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
