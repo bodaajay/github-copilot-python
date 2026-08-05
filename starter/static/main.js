@@ -32,12 +32,13 @@ function stopTimer() {
 
 function applyTheme(theme) {
   const body = document.body;
+  const toggle = document.getElementById('theme-toggle');
   if (theme === 'dark') {
     body.classList.add('dark-mode');
-    document.getElementById('theme-toggle').innerText = 'Light Mode';
+    toggle.innerText = '🌙';
   } else {
     body.classList.remove('dark-mode');
-    document.getElementById('theme-toggle').innerText = 'Dark Mode';
+    toggle.innerText = '☀️';
   }
   localStorage.setItem('sudokuTheme', theme);
 }
@@ -62,6 +63,67 @@ function getBoardState() {
   return board;
 }
 
+function findInvalidMoves(board) {
+  const invalid = new Set();
+  for (let row = 0; row < SIZE; row++) {
+    for (let col = 0; col < SIZE; col++) {
+      const value = board[row][col];
+      if (!value) continue;
+
+      for (let j = 0; j < SIZE; j++) {
+        if (j !== col && board[row][j] === value) {
+          invalid.add(row * SIZE + col);
+          invalid.add(row * SIZE + j);
+        }
+      }
+
+      for (let i = 0; i < SIZE; i++) {
+        if (i !== row && board[i][col] === value) {
+          invalid.add(row * SIZE + col);
+          invalid.add(i * SIZE + col);
+        }
+      }
+
+      const startRow = Math.floor(row / 3) * 3;
+      const startCol = Math.floor(col / 3) * 3;
+      for (let i = startRow; i < startRow + 3; i++) {
+        for (let j = startCol; j < startCol + 3; j++) {
+          if ((i !== row || j !== col) && board[i][j] === value) {
+            invalid.add(row * SIZE + col);
+            invalid.add(i * SIZE + j);
+          }
+        }
+      }
+    }
+  }
+  return invalid;
+}
+
+function updateLiveValidation() {
+  const board = getBoardState();
+  const invalid = findInvalidMoves(board);
+  const boardDiv = document.getElementById('sudoku-board');
+  const inputs = boardDiv.getElementsByTagName('input');
+  let hasInvalid = false;
+
+  for (let idx = 0; idx < inputs.length; idx++) {
+    const inp = inputs[idx];
+    if (inp.disabled) continue;
+    inp.classList.toggle('incorrect', invalid.has(idx));
+    if (invalid.has(idx)) {
+      hasInvalid = true;
+    }
+  }
+
+  const msg = document.getElementById('message');
+  if (hasInvalid) {
+    msg.style.color = '#d32f2f';
+    msg.innerText = 'Invalid move detected';
+  } else {
+    msg.innerText = '';
+  }
+}
+
 function createBoardElement() {
   const boardDiv = document.getElementById('sudoku-board');
   boardDiv.innerHTML = '';
@@ -80,7 +142,8 @@ function createBoardElement() {
       input.addEventListener('input', (e) => {
         const val = e.target.value.replace(/[^1-9]/g, '');
         e.target.value = val;
-        e.target.classList.remove('incorrect', 'hint');
+        e.target.classList.remove('hint');
+        updateLiveValidation();
       });
       rowDiv.appendChild(input);
     }
@@ -144,17 +207,20 @@ function renderScoreboard() {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${index + 1}</td>
+      <td>${entry.name || 'Anonymous'}</td>
       <td>${formatTime(entry.time)}</td>
       <td>${entry.difficulty}</td>
-      <td>${new Date(entry.date).toLocaleDateString()}</td>
     `;
     rows.appendChild(row);
   });
 }
 
 function registerScore() {
+  const nameInput = document.getElementById('player-name');
+  const playerName = nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Anonymous';
   const scores = loadScoreboard();
   scores.push({
+    name: playerName,
     time: elapsedSeconds,
     difficulty: currentDifficulty,
     date: new Date().toISOString(),

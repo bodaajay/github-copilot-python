@@ -8,7 +8,7 @@
 <body>
   <div class="top-bar">
     <h1>Sudoku Game</h1>
-    <button id="theme-toggle" class="theme-toggle">Dark Mode</button>
+    <button id="theme-toggle" class="theme-toggle">☀️</button>
   </div>
 
   <div class="status-bar">
@@ -29,6 +29,7 @@
   <div id="sudoku-board"></div>
 
   <div class="controls">
+    <input id="player-name" type="text" placeholder="Enter your name" maxlength="20">
     <button id="new-game">New Game</button>
     <button id="hint-button">Hint</button>
     <button id="check-solution">Check</button>
@@ -40,10 +41,10 @@
     <table id="scoreboard">
       <thead>
         <tr>
-          <th>#</th>
+          <th>Rank</th>
+          <th>Name</th>
           <th>Time</th>
           <th>Difficulty</th>
-          <th>Date</th>
         </tr>
       </thead>
       <tbody></tbody>
